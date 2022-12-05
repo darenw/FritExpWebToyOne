@@ -7,8 +7,7 @@
 
 <main>
  <h1>Fractionally Iterated Exponential</h1>
- <!-- FritexpToyOne / -->
- <p>Test</p>
+ <FritexpToyOne />
  <p>exp_1/2(0) = { fritexp(0.5, 0) }</p>
 </main>
 

@@ -8,7 +8,7 @@ export let label = "Value";
 
 <div>
 <p>(pretend Value Slider here)</p>
-</div>
+</div> 
 
 <style>
 div {border:solid 3px #d44; padding:5px;}

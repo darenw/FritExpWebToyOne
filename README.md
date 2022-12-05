@@ -5,3 +5,5 @@ defined by Australian mathematician G. Szekeres.
 
 
 WORK IN PROGRESS
+
+
