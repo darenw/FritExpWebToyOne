@@ -7,7 +7,6 @@
 
 
 
-
 /*
    evalSzekeresPolys(u) returns the values of the Szekeres polynomials for a given 
    value of u.  These values are used as coefficients in a power series in x
@@ -28,6 +27,7 @@ const SzekPolys = [
 function poly(coefs, u)  {
     return coefs.reduceRight( (acc, coef) => coef+u*acc, 0);
 }
+
 
 function evalSzekeresPolys(u)  {
     return SzekPolys.map( sp =>  poly(sp, u) )
@@ -56,20 +56,18 @@ function evalSzekeresPolys(u)  {
 */
 
 function gsmall(u, x)   {
-    let xcoefs = evalSzekeresPolys(u)
-    return poly(xcoefs, x)
+    let xcoefs = evalSzekeresPolys(u);
+    return poly(xcoefs, x);
 }
 
 
 
-const BIG_WONT_OVERFLOW = 700.0;
-const SMALL_FOR_GUSMALL = 0.5;
+
+const BIG_WONT_OVERFLOW = 709.7;  // for IEEE 64bit float, exp(this value) won't overflow
+const SMALL_FOR_GUSMALL = 0.4;
 
 
-function fritexp(u,x)    {
-
-    let u_int = Math.round(u);
-    let u_frac = u - u_int;
+function fritexp_core(xcoefs, u_int, x, small_limit=SMALL_FOR_GUSMALL) {
     
     let count =0;
     while (x < BIG_WONT_OVERFLOW)  {
@@ -82,7 +80,7 @@ function fritexp(u,x)    {
         count -= 1;
     }
     
-    let y = gsmall(u_frac,x);
+    let y = poly(xcoefs, x)
     
     while (y < BIG_WONT_OVERFLOW)   {
         y = Math.exp(y) - 1;
@@ -102,5 +100,38 @@ function fritexp(u,x)    {
 }
 
 
+/** 
+ * Main function most users will want. 
+ * Computes exp_u(x) for a given u and x.
+ * Simple, trouble-free pure function.
+ * May return useless values when it should return NAN, such as for log(-1)
+ * @param  {Float} u     order of iteration
+ * @param  {Float} x     value to give to the fractionally iterated exponential
+ * @return  {Float}      value of exp_u(x)
+ */
+export function fritexp(u,x)    {
+    return fritexp_function_factory(u)(x);
+}
 
-export default fritexp;
+
+
+/**
+ * This factory creates a function with some of the internal stuff precalculated.
+ * Use that function to calculate faster many exp_u(x) for the same x 
+ * @param  {Float}    The order of iteration, u 
+ * @return {Function} Function that takes x, returns exp_u(x)
+ */
+export function fritexp_function_factory(u, small_limit=SMALL_FOR_GUSMALL)  {
+    let u_int = Math.round(u); 
+    let u_frac = u - u_int;
+    let xcoefs = evalSzekeresPolys(u_frac);
+    const f = function (x)  {
+              return fritexp_core(xcoefs, u_int, x, small_limit);
+    };
+    return f;
+}
+
+
+
+//export  fritexp ;
+//export { gsmall, fritexp, FritexpFunctionFactory }
